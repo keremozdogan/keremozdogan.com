@@ -14,14 +14,11 @@ npm run preview
 
 ## Deploy
 
-Production runs on a shared server with Docker (nginx serving the Vite build) behind the server's Caddy (automatic HTTPS).
-Server access details are with the project owner.
+`dist/` is a static site. Any of these work:
 
-1. Push to `main` from your machine.
-2. On the server: `cd /opt/keremozdogan.com && ./deploy.sh`
-   (git pull → docker compose build → up → health check). If `deploy/Caddyfile` changed, run it as root.
-
-Files: `Dockerfile`, `docker-compose.yml` (binds `127.0.0.1:8780`), `deploy/nginx.conf`, `deploy/Caddyfile`, `deploy.sh`.
+- **Cloudflare Pages** – connect the repo, build command `npm run build`, output directory `dist`.
+- **Vercel / Netlify** – same settings; both auto-detect Vite.
+- **Any static host** – upload the contents of `dist/`.
 
 ## Edit the content
 
