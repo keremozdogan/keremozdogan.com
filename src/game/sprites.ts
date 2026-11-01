@@ -4,80 +4,140 @@
 export type Palette = Record<string, string>;
 
 export const PLAYER_PALETTE: Palette = {
-  h: "#2b1a10", // hair
-  s: "#f3c99a", // skin
-  e: "#17181f", // eyes
-  t: "#2dd4bf", // hoodie
-  d: "#0f766e", // hoodie shadow / pocket
-  j: "#1e3a8a", // jeans
-  k: "#f8fafc", // sneakers
-  g: "#64748b", // sneaker sole
+  H: "#f9dfc4", // shiny bald highlight
+  s: "#f0c3a0", // skin
+  S: "#d9a27a", // skin shadow (nose, neck)
+  u: "#b98a68", // stubble
+  b: "#3a2a1e", // eyebrows
+  e: "#1a1410", // eyes
+  r: "#c0392b", // lips
+  t: "#ffffff", // teeth
+  T: "#cbd5e1", // teeth gaps
+  j: "#23272f", // jacket
+  J: "#0f1115", // jacket shadow
+  z: "#9ca3af", // zipper
+  p: "#1e3a8a", // jeans
+  w: "#f8fafc", // sneakers
 };
 
+// 16x20 caricature: bald, thick eyebrows, giant toothy grin, stubble, black jacket.
 const P_HEAD = [
-  "......hhhhh.....",
-  ".....hhhhhhh....",
-  ".....hhhhhhh....",
-  ".....hsssssh....",
-  ".....sessse.....",
-  ".....ssssss.....",
-  "......ssss......",
+  ".....HHHHHH.....",
+  "....sHHHHHHs....",
+  "...ssssssssss...",
+  "...ssssssssss...",
+  "...sbbbssbbbs...",
+  "...sseesseess...",
+  "...ssssSSssss...",
+  "...rssssssssr...",
+  "...srttttttrs...",
+  "....rtTtTtTr....",
+  ".....uuuuuu.....",
+  "......uuuu......",
 ];
 
 export const PLAYER = {
   idle: [
     ...P_HEAD,
-    "....tttttttt....",
-    "...tttttttttt...",
-    "...tttddddttt...",
-    "...stttttttts...",
-    "....tttttttt....",
     "....jjjjjjjj....",
-    "....jjj..jjj....",
-    "....jjj..jjj....",
-    "...kkkk..kkkk...",
+    "...jjjjzzjjjj...",
+    "..sjjjjzzjjjjs..",
+    "...jJjjzzjjJj...",
+    "....pppppppp....",
+    "....ppp..ppp....",
+    "....ppp..ppp....",
+    "...wwww..wwww...",
   ],
   walk1: [
     ...P_HEAD,
-    "....tttttttt....",
-    "...tttttttttt...",
-    "...tttddddttt...",
-    "..s.tttttttt.s..",
-    "....tttttttt....",
     "....jjjjjjjj....",
-    "...jjj....jjj...",
-    "...jjj....jjj...",
-    "..kkkk....kkkk..",
+    "...jjjjzzjjjj...",
+    "..s.jjjzzjjj.s..",
+    "...jJjjzzjjJj...",
+    "....pppppppp....",
+    "...ppp....ppp...",
+    "...ppp....ppp...",
+    "..wwww....wwww..",
   ],
   walk2: [
     ...P_HEAD,
-    "....tttttttt....",
-    "...tttttttttt...",
-    "...tttddddttt...",
-    "...stttttttts...",
-    "....tttttttt....",
     "....jjjjjjjj....",
-    ".....jjjjjj.....",
-    ".....jjj.jj.....",
-    "....kkkk.kkk....",
+    "...jjjjzzjjjj...",
+    "..sjjjjzzjjjjs..",
+    "...jJjjzzjjJj...",
+    "....pppppppp....",
+    ".....pppppp.....",
+    ".....ppp.pp.....",
+    "....wwww.www....",
   ],
   jump: [
-    "......hhhhh.....",
-    ".....hhhhhhh....",
-    ".....hhhhhhh....",
-    ".....hsssssh....",
-    ".....sessse.....",
-    ".....ssssss.....",
-    "..s...ssss...s..",
-    "..s.tttttttt.s..",
-    "...tttttttttt...",
-    "...tttddddttt...",
-    "....tttttttt....",
-    "....tttttttt....",
-    "....jjjjjjjj....",
-    "...jjj....jjj...",
-    "..kkkk....kkkk..",
+    ".....HHHHHH.....",
+    "....sHHHHHHs....",
+    "...ssssssssss...",
+    "...ssssssssss...",
+    "...sbbbssbbbs...",
+    "...sseesseess...",
+    "...ssssSSssss...",
+    "...rssssssssr...",
+    "...srttttttrs...",
+    "..s.rtTtTtTr.s..",
+    "..s..uuuuuu..s..",
+    "..s...uuuu...s..",
+    "..sjjjjjjjjjjs..",
+    "...jjjjzzjjjj...",
+    "...jjjjzzjjjj...",
+    "...jJjjzzjjJj...",
+    "....pppppppp....",
+    "...ppp....ppp...",
+    "..wwww....wwww..",
     "................",
+  ],
+  throw: [
+    ...P_HEAD,
+    "....jjjjjjjj....",
+    "...jjjjzzjjjjss.",
+    "..sjjjjzzjjjjjs.",
+    "...jJjjzzjjJj...",
+    "....pppppppp....",
+    "....ppp..ppp....",
+    "....ppp..ppp....",
+    "...wwww..wwww...",
+  ],
+};
+
+export const BIRD_PALETTE: Palette = {
+  g: "#6b7280", // body grey (NYC pigeon)
+  G: "#374151", // wing / shadow
+  w: "#f9fafb", // belly
+  e: "#111827", // eye
+  o: "#f59e0b", // beak
+  i: "#7c3aed", // neck iridescence
+};
+
+export const BIRD = {
+  up: [
+    "......GGGG......",
+    ".....GGGGGG.....",
+    "....GGGG.GGG....",
+    "...gggggggggg...",
+    "..gigggggggggeo.",
+    "..ggwwwwwwggggo.",
+    "...wwwwwwwwgg...",
+    "....wwwwww......",
+    ".....ww.ww......",
+    "................",
+  ],
+  down: [
+    "................",
+    "................",
+    "....ggggggggg...",
+    "...gggggggggg...",
+    "..gigggggggggeo.",
+    "..ggwwwwwwggggo.",
+    "...wwGGGGwwwg...",
+    "....GGGGGG......",
+    ".....GGGG.......",
+    "......GG........",
   ],
 };
 

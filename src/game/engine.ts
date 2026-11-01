@@ -20,6 +20,8 @@ import {
   ZONES,
 } from "./level";
 import {
+  BIRD,
+  BIRD_PALETTE,
   BLOCK,
   BLOCK_PALETTE,
   BLOCK_USED_PALETTE,
@@ -44,6 +46,7 @@ export interface Input {
   right: boolean;
   jump: boolean;
   action: boolean;
+  fire: boolean;
 }
 
 export interface Stats {
@@ -85,7 +88,34 @@ interface Player {
   jumpBuffer: number;
   jumpHeld: boolean;
   autoWalk: boolean;
+  throwT: number;
+  fireCooldown: number;
 }
+
+interface Bird {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  baseX: number;
+  baseY: number;
+  vx: number;
+  vy: number;
+  t: number;
+  alive: boolean;
+  gone: boolean;
+}
+
+interface Projectile {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  glyph: number;
+}
+
+const GLYPHS = ["<", ">", "#", ";", "{", "}", "/", "="];
 
 interface Bug {
   x: number;
@@ -147,14 +177,15 @@ const JUMP = -6.1;
 const JUMP_CUT = -2.2;
 const STOMP_BOUNCE = -4.6;
 
-type SkyPal = { top: string; bot: string; far: string; mid: string; night: boolean };
+type SkyPal = { top: string; bot: string; far: string; win: string; mid: string; midWin: string; night: boolean };
+// far = distant skyscrapers, mid = closer low-rise blocks, win/midWin = window lights
 const SKY: Record<Zone, SkyPal> = {
-  start: { top: "#4ea8ff", bot: "#c9ecff", far: "#3b7fd4", mid: "#52c66a", night: false },
-  experience: { top: "#4ea8ff", bot: "#c9ecff", far: "#3b7fd4", mid: "#52c66a", night: false },
-  skills: { top: "#0e9aa7", bot: "#9ff2e2", far: "#0d6b63", mid: "#1ab49f", night: false },
-  projects: { top: "#0b1026", bot: "#33307f", far: "#1b1848", mid: "#3f37b3", night: true },
-  education: { top: "#4ea8ff", bot: "#ffe9a8", far: "#3b7fd4", mid: "#52c66a", night: false },
-  deploy: { top: "#ff7a3d", bot: "#ffe08a", far: "#8a3415", mid: "#6ba12a", night: false },
+  start: { top: "#4ea8ff", bot: "#c9ecff", far: "#4f8fdc", win: "#8cc0ff", mid: "#2f5aa8", midWin: "#6f9be6", night: false },
+  experience: { top: "#4ea8ff", bot: "#c9ecff", far: "#4f8fdc", win: "#8cc0ff", mid: "#2f5aa8", midWin: "#6f9be6", night: false },
+  skills: { top: "#0e9aa7", bot: "#9ff2e2", far: "#157a74", win: "#5fd6c8", mid: "#0b4f4b", midWin: "#2fb3a4", night: false },
+  projects: { top: "#0b1026", bot: "#33307f", far: "#1b1848", win: "#ffd166", mid: "#120f33", midWin: "#ffb347", night: true },
+  education: { top: "#4ea8ff", bot: "#ffe9a8", far: "#4f8fdc", win: "#8cc0ff", mid: "#2f5aa8", midWin: "#6f9be6", night: false },
+  deploy: { top: "#ff7a3d", bot: "#ffe08a", far: "#7a2e12", win: "#ffb28a", mid: "#4a1a0a", midWin: "#ff9a5c", night: false },
 };
 
 function hexToRgb(h: string) {
@@ -184,7 +215,7 @@ export class Game {
   ctx: CanvasRenderingContext2D;
   W = 400;
   H = LEVEL_H;
-  input: Input = { left: false, right: false, jump: false, action: false };
+  input: Input = { left: false, right: false, jump: false, action: false, fire: false };
   paused = false;
   running = false;
   won = false;
@@ -194,6 +225,8 @@ export class Game {
   private level!: LevelData;
   private player!: Player;
   private bugs: Bug[] = [];
+  private birds: Bird[] = [];
+  private projectiles: Projectile[] = [];
   private coins: Coin[] = [];
   private signs: Sign[] = [];
   private doors: Door[] = [];
@@ -212,6 +245,7 @@ export class Game {
   private nearDoor: Door | null = null;
   private actionPrev = false;
   private jumpPrev = false;
+  private firePrev = false;
   private lastPrompt: string | null = null;
   private raf = 0;
   private last = 0;
@@ -252,6 +286,8 @@ export class Game {
       jumpBuffer: 0,
       jumpHeld: false,
       autoWalk: false,
+      throwT: 0,
+      fireCooldown: 0,
     };
     this.bugs = L.bugs.map((b) => ({
       x: b.col * TILE + 2,
@@ -266,6 +302,20 @@ export class Game {
       onGround: false,
       gone: false,
     }));
+    this.birds = L.birds.map((b) => ({
+      x: b.col * TILE,
+      y: b.row * TILE,
+      w: 12,
+      h: 8,
+      baseX: b.col * TILE,
+      baseY: b.row * TILE,
+      vx: hash(b.col * 3) > 0.5 ? 0.7 : -0.7,
+      vy: 0,
+      t: hash(b.col) * 100,
+      alive: true,
+      gone: false,
+    }));
+    this.projectiles = [];
     this.coins = L.coins.map((c) => ({ x: c.col * TILE + 4, y: c.row * TILE + 4, taken: false }));
     this.signs = L.signs.map((s) => ({ x: s.col * TILE, id: s.id, label: s.label, auto: s.auto, seen: false }));
     this.doors = L.doors.map((d) => ({ x: d.col * TILE, id: d.id, label: d.label, seen: false }));
@@ -288,7 +338,7 @@ export class Game {
       commits: 0,
       commitsTotal: this.coins.length,
       bugs: 0,
-      bugsTotal: this.bugs.length,
+      bugsTotal: this.bugs.length + this.birds.length,
       skills: 0,
       skillsTotal: SKILLS.length,
       time: 0,
@@ -481,10 +531,18 @@ export class Game {
     if (p.onGround && Math.abs(p.vx) > 0.2) p.animT += Math.abs(p.vx) * 0.12;
     else if (p.onGround) p.animT = 0;
     if (p.invincible > 0) p.invincible--;
+    if (p.throwT > 0) p.throwT--;
+    if (p.fireCooldown > 0) p.fireCooldown--;
+
+    // ---- throw code
+    const firePressed = inp.fire && !this.firePrev;
+    this.firePrev = inp.fire;
+    if (firePressed && p.fireCooldown === 0) this.throwCode();
 
     // ---- interactions
     this.checkCoins();
     this.checkBugs();
+    this.checkBirds();
     this.checkSignsAndDoors();
     this.checkFlag();
 
@@ -541,6 +599,56 @@ export class Game {
       }
       if (b.y > LEVEL_H + 32) b.gone = true;
     }
+    // birds: patrol around their spawn point with a sine bob
+    for (const b of this.birds) {
+      if (b.gone) continue;
+      if (!b.alive) {
+        b.vy = Math.min(MAX_FALL, b.vy + GRAV);
+        b.y += b.vy;
+        b.x += b.vx * 0.5;
+        if (b.y > LEVEL_H + 32) b.gone = true;
+        continue;
+      }
+      if (b.x < this.cam.x - 140 || b.x > this.cam.x + this.W + 140) continue;
+      b.t += 1;
+      b.x += b.vx;
+      if (b.x > b.baseX + 90) b.vx = -Math.abs(b.vx);
+      if (b.x < b.baseX - 90) b.vx = Math.abs(b.vx);
+      b.y = b.baseY + Math.sin(b.t * 0.07) * 9;
+    }
+    // projectiles: thrown code glyphs, bounce along the ground like a fireball
+    for (const pr of this.projectiles) {
+      pr.life--;
+      pr.vy = Math.min(5, pr.vy + 0.18);
+      pr.x += pr.vx;
+      pr.y += pr.vy;
+      const c = Math.floor((pr.x + 4) / TILE);
+      const rBelow = Math.floor((pr.y + 8) / TILE);
+      if (pr.vy > 0 && isSolid(this.tileAt(c, rBelow))) {
+        pr.y = rBelow * TILE - 8;
+        pr.vy = -2.6;
+      }
+      const rMid = Math.floor((pr.y + 4) / TILE);
+      if (isSolid(this.tileAt(c, rMid))) pr.life = 0;
+      if (pr.life % 5 === 0) pr.glyph = (pr.glyph + 1) % GLYPHS.length;
+      if (pr.life <= 0) this.dust(pr.x + 4, pr.y + 4, "#fde047", 3);
+      // hit enemies
+      for (const b of this.bugs) {
+        if (!b.alive || b.gone || pr.life <= 0) continue;
+        if (pr.x < b.x + b.w && pr.x + 8 > b.x && pr.y < b.y + b.h && pr.y + 8 > b.y) {
+          this.squish(b);
+          pr.life = 0;
+        }
+      }
+      for (const b of this.birds) {
+        if (!b.alive || b.gone || pr.life <= 0) continue;
+        if (pr.x < b.x + b.w && pr.x + 8 > b.x && pr.y < b.y + b.h && pr.y + 8 > b.y) {
+          this.killBird(b);
+          pr.life = 0;
+        }
+      }
+    }
+    this.projectiles = this.projectiles.filter((pr) => pr.life > 0);
     // particles
     for (const pt of this.particles) {
       pt.life--;
@@ -679,6 +787,48 @@ export class Game {
     this.emitStats();
   }
 
+  private throwCode() {
+    const p = this.player;
+    p.fireCooldown = 16;
+    p.throwT = 12;
+    this.projectiles.push({
+      x: p.facing > 0 ? p.x + p.w : p.x - 8,
+      y: p.y + 4,
+      vx: p.facing * 3.4 + p.vx * 0.4,
+      vy: -1.2,
+      life: 75,
+      glyph: Math.floor(Math.random() * GLYPHS.length),
+    });
+    audio.sfx("throw");
+  }
+
+  private killBird(b: Bird) {
+    b.alive = false;
+    b.vy = -2;
+    this.stats.bugs++;
+    audio.sfx("stomp");
+    this.text("FLAKY TEST FIXED!", b.x - 30, b.y - 12, "#86efac", -0.7, 55);
+    this.dust(b.x + b.w / 2, b.y + b.h / 2, "#9ca3af", 6);
+    this.emitStats();
+  }
+
+  private checkBirds() {
+    const p = this.player;
+    for (const b of this.birds) {
+      if (!b.alive || b.gone) continue;
+      if (p.x < b.x + b.w && p.x + p.w > b.x && p.y < b.y + b.h && p.y + p.h > b.y) {
+        const fromAbove = p.vy > 0 && p.y + p.h - b.y < 7;
+        if (fromAbove) {
+          this.killBird(b);
+          p.vy = STOMP_BOUNCE;
+        } else if (p.invincible === 0) {
+          this.die(true);
+          return;
+        }
+      }
+    }
+  }
+
   private checkBugs() {
     const p = this.player;
     for (const b of this.bugs) {
@@ -750,7 +900,7 @@ export class Game {
   private openPanel(id: string, kind: "sign" | "door") {
     audio.sfx(kind === "door" ? "door" : "sign");
     this.player.vx = 0;
-    this.input.left = this.input.right = this.input.jump = this.input.action = false;
+    this.input.left = this.input.right = this.input.jump = this.input.action = this.input.fire = false;
     this.paused = true;
     if (this.lastPrompt !== null) {
       this.lastPrompt = null;
@@ -864,12 +1014,12 @@ export class Game {
       g.globalAlpha = 1;
     }
 
-    // far skyline (Istanbul silhouette)
-    this.drawSkyline(camX, pal.far);
+    // far skyline (NYC skyscrapers)
+    this.drawSkyline(camX, pal.far, pal.win, pal.nightT);
     // clouds
     this.drawClouds(camX, pal.nightT);
-    // hills
-    this.drawHills(camX, pal.mid);
+    // mid low-rise blocks
+    this.drawHills(camX, pal.mid, pal.midWin);
 
     g.save();
     g.translate(-camX, 0);
@@ -882,7 +1032,9 @@ export class Game {
     this.drawCoins(camX);
     this.drawBadges();
     this.drawBugs(camX);
+    this.drawBirds(camX);
     this.drawPlayer();
+    this.drawProjectiles();
     this.drawParticles();
 
     g.restore();
@@ -910,59 +1062,97 @@ export class Game {
       top: lerpColor(a.top, b.top, t),
       bot: lerpColor(a.bot, b.bot, t),
       far: lerpColor(a.far, b.far, t),
+      win: lerpColor(a.win, b.win, t),
       mid: lerpColor(a.mid, b.mid, t),
+      midWin: lerpColor(a.midWin, b.midWin, t),
       nightT,
     };
   }
 
-  private drawSkyline(camX: number, color: string) {
+  /** Far layer: Manhattan-style skyscrapers with window grids, a spire tower and an antenna tower. */
+  private drawSkyline(camX: number, color: string, win: string, nightT: number) {
     const g = this.ctx;
-    const seg = 480;
+    const seg = 520;
     const off = camX * 0.2;
     const base = GROUND_ROW * TILE;
-    g.fillStyle = color;
     const first = Math.floor(off / seg) - 1;
     for (let s = first; s <= first + Math.ceil(this.W / seg) + 2; s++) {
       const sx = s * seg - off;
-      // buildings
       let x = 0;
       let i = 0;
-      while (x < seg) {
-        const w = 14 + Math.floor(hash(s * 97 + i) * 26);
-        const h = 20 + Math.floor(hash(s * 31 + i * 7) * 50);
-        g.fillRect(Math.floor(sx + x), base - h, w, h);
-        // windows
-        x += w + 4 + Math.floor(hash(s * 11 + i) * 10);
+      while (x < seg - 20) {
+        const w = 18 + Math.floor(hash(s * 97 + i) * 28);
+        const h = 48 + Math.floor(hash(s * 31 + i * 7) * 110);
+        const bx = Math.floor(sx + x);
+        const by = base - h;
+        g.fillStyle = color;
+        g.fillRect(bx, by, w, h);
+        const kind = hash(s * 13 + i * 5);
+        if (kind > 0.8) {
+          // stepped art-deco crown + spire
+          g.fillRect(bx + 4, by - 10, w - 8, 10);
+          g.fillRect(bx + Math.floor(w / 2) - 2, by - 26, 4, 16);
+          g.fillRect(bx + Math.floor(w / 2) - 1, by - 40, 2, 14);
+        } else if (kind > 0.65) {
+          // antenna tower
+          g.fillRect(bx + Math.floor(w / 2) - 1, by - 22, 2, 22);
+          g.fillRect(bx + Math.floor(w / 2) - 3, by - 14, 6, 2);
+        } else if (kind > 0.5) {
+          // flat roof with water tank
+          g.fillRect(bx + 3, by - 6, 7, 6);
+        }
+        // window grid (hash-stable, some lit)
+        g.fillStyle = win;
+        for (let wy = by + 6; wy < base - 6; wy += 6) {
+          for (let wx = bx + 3; wx < bx + w - 3; wx += 5) {
+            const lit = hash(wx * 7 + wy * 13 + s) > (nightT > 0.5 ? 0.58 : 0.66);
+            if (lit) g.fillRect(wx, wy, 2, 3);
+          }
+        }
+        x += w + 3 + Math.floor(hash(s * 11 + i) * 6);
         i++;
       }
-      // mosque silhouette: dome + two minarets
-      const mx = Math.floor(sx + 140 + hash(s * 5) * 180);
-      g.beginPath();
-      g.arc(mx, base - 34, 22, Math.PI, 0);
-      g.fill();
-      g.fillRect(mx - 24, base - 34, 48, 34);
-      g.fillRect(mx - 40, base - 78, 4, 78);
-      g.fillRect(mx + 36, base - 78, 4, 78);
-      g.fillRect(mx - 42, base - 72, 8, 2);
-      g.fillRect(mx + 34, base - 72, 8, 2);
-      g.fillRect(mx - 1, base - 60, 2, 6);
     }
   }
 
-  private drawHills(camX: number, color: string) {
+  /** Mid layer: closer low-rise blocks (brownstones, rooftops with water towers). */
+  private drawHills(camX: number, color: string, win: string) {
     const g = this.ctx;
     const base = GROUND_ROW * TILE;
     const off = camX * 0.5;
-    g.fillStyle = color;
-    const period = 240;
-    const first = Math.floor(off / period) - 1;
-    for (let i = first; i <= first + Math.ceil(this.W / period) + 2; i++) {
-      const hx = i * period - off + hash(i * 3) * 80;
-      const r = 60 + hash(i * 17) * 50;
-      const hgt = 26 + hash(i * 23) * 22;
-      g.beginPath();
-      g.ellipse(hx, base + 4, r, hgt, 0, Math.PI, 0);
-      g.fill();
+    const seg = 320;
+    const first = Math.floor(off / seg) - 1;
+    for (let s = first; s <= first + Math.ceil(this.W / seg) + 2; s++) {
+      const sx = s * seg - off;
+      let x = 0;
+      let i = 0;
+      while (x < seg - 10) {
+        const w = 26 + Math.floor(hash(s * 41 + i * 3) * 40);
+        const h = 18 + Math.floor(hash(s * 23 + i * 9) * 42);
+        const bx = Math.floor(sx + x);
+        const by = base - h;
+        g.fillStyle = color;
+        g.fillRect(bx, by, w, h);
+        // parapet
+        g.fillRect(bx - 1, by, w + 2, 2);
+        if (hash(s * 7 + i) > 0.7) {
+          // water tower on legs
+          const tx = bx + 4 + Math.floor(hash(s + i * 17) * (w - 14));
+          g.fillRect(tx + 1, by - 8, 8, 6);
+          g.fillRect(tx, by - 2, 1, 2);
+          g.fillRect(tx + 9, by - 2, 1, 2);
+          g.fillRect(tx + 2, by - 10, 6, 2);
+        }
+        // windows
+        g.fillStyle = win;
+        for (let wy = by + 5; wy < base - 5; wy += 7) {
+          for (let wx = bx + 3; wx < bx + w - 3; wx += 6) {
+            if (hash(wx * 3 + wy * 11 + s * 5) > 0.55) g.fillRect(wx, wy, 3, 3);
+          }
+        }
+        x += w + 2 + Math.floor(hash(s * 3 + i) * 5);
+        i++;
+      }
     }
   }
 
@@ -1276,10 +1466,10 @@ export class Game {
     if (p.invincible > 0 && Math.floor(p.invincible / 4) % 2 === 0) return;
     let rows: string[];
     let key: string;
-    if (p.dead) {
-      rows = PLAYER.jump;
-      key = "p-jump";
-    } else if (!p.onGround) {
+    if (p.throwT > 0 && p.onGround) {
+      rows = PLAYER.throw;
+      key = "p-throw";
+    } else if (p.dead || !p.onGround) {
       rows = PLAYER.jump;
       key = "p-jump";
     } else if (Math.abs(p.vx) > 0.2) {
@@ -1292,8 +1482,45 @@ export class Game {
     }
     let spr = sprite(key, rows, PLAYER_PALETTE);
     if (p.facing < 0) spr = flipped(key, spr);
-    const dy = p.dead ? 0 : 0;
-    g.drawImage(spr, Math.round(p.x - 3), Math.round(p.y - 1 + dy));
+    // sprite is 16x20; the hitbox is 10x15 — the big head sticks out above it
+    g.drawImage(spr, Math.round(p.x - 3), Math.round(p.y - 5));
+  }
+
+  private drawBirds(camX: number) {
+    const g = this.ctx;
+    for (const b of this.birds) {
+      if (b.gone) continue;
+      if (b.x < camX - 24 || b.x > camX + this.W + 24) continue;
+      const up = Math.floor(b.t / 8) % 2 === 0;
+      const key = up ? "bird-up" : "bird-down";
+      let spr = sprite(key, up ? BIRD.up : BIRD.down, BIRD_PALETTE);
+      if (b.vx < 0) spr = flipped(key, spr);
+      if (!b.alive) {
+        g.save();
+        g.translate(Math.round(b.x + 8), Math.round(b.y + 5));
+        g.scale(1, -1);
+        g.drawImage(spr, -8, -5);
+        g.restore();
+      } else {
+        g.drawImage(spr, Math.round(b.x - 2), Math.round(b.y - 1));
+      }
+    }
+  }
+
+  private drawProjectiles() {
+    const g = this.ctx;
+    g.font = '8px "Press Start 2P", monospace';
+    g.textBaseline = "top";
+    g.textAlign = "left";
+    for (const pr of this.projectiles) {
+      const ch = GLYPHS[pr.glyph];
+      const x = Math.round(pr.x);
+      const y = Math.round(pr.y);
+      g.fillStyle = "#0f172a";
+      g.fillText(ch, x + 1, y + 1);
+      g.fillStyle = "#fde047";
+      g.fillText(ch, x, y);
+    }
   }
 
   private drawParticles() {

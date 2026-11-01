@@ -223,7 +223,7 @@ canvas.game {
 .title .sprite-preview {
   image-rendering: pixelated;
   width: 96px;
-  height: 96px;
+  height: 120px;
   animation: bob 1.2s ease-in-out infinite;
 }
 @keyframes bob {
@@ -448,7 +448,9 @@ canvas.game {
   border: 2px solid #475569;
   color: #cbd5e1;
 }
-.xp {
+.xp,
+.dialog p.xp,
+.resume p.xp {
   font-family: var(--pixel);
   font-size: 8px;
   color: var(--green);
@@ -538,7 +540,7 @@ canvas.game {
 .about-head canvas {
   image-rendering: pixelated;
   width: 64px;
-  height: 64px;
+  height: 80px;
   background: #1e293b;
   border: 2px solid #475569;
   flex: none;
@@ -634,6 +636,12 @@ canvas.game {
   height: 72px;
   border-radius: 50%;
   background: rgba(180, 83, 9, 0.85);
+}
+.touch button.big.fire {
+  background: rgba(30, 64, 175, 0.85);
+  width: 60px;
+  height: 60px;
+  align-self: flex-end;
 }
 .touch button:active,
 .touch button.down {

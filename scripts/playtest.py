@@ -52,6 +52,19 @@ async def main():
             async def pos():
                 return await page.evaluate("window.__game.getPlayerPos()")
 
+            # --- throw code + bird
+            await tp(22)
+            await page.keyboard.press("x")
+            await page.wait_for_timeout(120)
+            await page.keyboard.press("x")
+            await page.wait_for_timeout(200)
+            await shot("00b-throw")
+            await hold("ArrowRight", 700)
+            await page.keyboard.press("x")
+            await page.wait_for_timeout(350)
+            await shot("00c-bird")
+            await tp(3)
+
             # --- start: walk to the sign, panel auto-opens
             await hold("ArrowRight", 900)
             await page.wait_for_timeout(300)

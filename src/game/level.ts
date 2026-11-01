@@ -34,6 +34,7 @@ export type SignSpawn = { col: number; id: string; label: string; sub?: string; 
 export type DoorSpawn = { col: number; id: string; label: string };
 export type CoinSpawn = { col: number; row: number };
 export type BugSpawn = { col: number };
+export type BirdSpawn = { col: number; row: number };
 
 export interface LevelData {
   grid: Uint8Array;
@@ -42,6 +43,7 @@ export interface LevelData {
   doors: DoorSpawn[];
   coins: CoinSpawn[];
   bugs: BugSpawn[];
+  birds: BirdSpawn[];
   flagCol: number;
   playerCol: number;
 }
@@ -57,6 +59,8 @@ export function buildLevel(): LevelData {
   const doors: DoorSpawn[] = [];
   const coins: CoinSpawn[] = [];
   const bugs: BugSpawn[] = [];
+  const birds: BirdSpawn[] = [];
+  const bird = (col: number, row: number) => birds.push({ col, row });
 
   const set = (c: number, r: number, t: number) => {
     if (c < 0 || c >= COLS || r < 0 || r >= ROWS) return;
@@ -91,6 +95,7 @@ export function buildLevel(): LevelData {
   coinRow(18, 20, 6);
   coinArc(13, [8, 7, 8]);
   bugs.push({ col: 25 });
+  bird(28, 6);
 
   // ---------------- EXPERIENCE (31-118) ----------------
   ground(31, 47);
@@ -102,6 +107,7 @@ export function buildLevel(): LevelData {
   const exp = EXPERIENCE;
   signs.push({ col: 38, id: exp[0].id, label: exp[0].company.toUpperCase(), sub: exp[0].level, auto: true });
   bugs.push({ col: 44 });
+  bird(50, 5);
   coinArc(46, [8, 7, 7, 8]); // over the pit
   bricks(52, 55, 8);
   coinRow(52, 55, 6);
@@ -112,6 +118,8 @@ export function buildLevel(): LevelData {
   coinRow(69, 71, 5);
   signs.push({ col: 75, id: exp[2].id, label: "RIGOSIS", sub: exp[2].level, auto: true });
   bugs.push({ col: 78 });
+  bird(72, 4);
+  bird(86, 6);
   coinArc(79, [8, 7, 6, 7, 8]); // over the 3-wide pit
   signs.push({ col: 88, id: exp[3].id, label: "FREELANCE", sub: exp[3].level, auto: true });
   bricks(92, 94, 8);
@@ -119,6 +127,8 @@ export function buildLevel(): LevelData {
   bugs.push({ col: 98 });
   signs.push({ col: 103, id: exp[4].id, label: exp[4].company.toUpperCase(), sub: exp[4].level, auto: true });
   bugs.push({ col: 108 });
+  bird(100, 5);
+  bird(114, 6);
   coinArc(110, [8, 7, 6, 7, 8]);
 
   // ---------------- SKILLS (119-178) ----------------
@@ -131,6 +141,8 @@ export function buildLevel(): LevelData {
   bugs.push({ col: 132 });
   backend.forEach((s, i) => block(141 + i * 2, 8, s.id));
   bugs.push({ col: 145 });
+  bird(137, 3);
+  bird(152, 4);
   tools.forEach((s, i) => block(155 + i * 2, 8, s.id));
   coinRow(127, 135, 5);
   coinRow(141, 149, 5);
@@ -138,6 +150,7 @@ export function buildLevel(): LevelData {
   bricks(165, 168, 8);
   coinRow(165, 168, 6);
   bugs.push({ col: 171 });
+  bird(168, 6);
 
   // ---------------- PROJECTS (179-238) ----------------
   ground(179, 190);
@@ -152,12 +165,16 @@ export function buildLevel(): LevelData {
   coinArc(190, [8, 7, 7, 8]);
   doors.push({ col: 199, id: PROJECTS[1].id, label: PROJECTS[1].container });
   bugs.push({ col: 196 });
+  bird(194, 5);
+  bird(208, 4);
   coinArc(203, [8, 7, 6, 7, 8]);
   doors.push({ col: 211, id: PROJECTS[2].id, label: PROJECTS[2].container });
   coinArc(216, [8, 7, 7, 8]);
   doors.push({ col: 224, id: PROJECTS[3].id, label: PROJECTS[3].container });
   bugs.push({ col: 229 });
   bugs.push({ col: 234 });
+  bird(220, 6);
+  bird(236, 3);
   bricks(230, 233, 8);
   coinRow(230, 233, 6);
 
@@ -166,15 +183,20 @@ export function buildLevel(): LevelData {
   signs.push({ col: 244, id: "education", label: "UNIVERSITY", sub: "WORLD 5", auto: true });
   coinArc(248, [8, 7, 6, 6, 7, 8]);
   bugs.push({ col: 252 });
+  bird(247, 5);
+  bird(256, 6);
 
   // ---------------- DEPLOY (259-295) ----------------
   ground(259, COLS - 1);
   stairs(266, 8);
   coinArc(266, [9, 8, 7, 6, 5, 4, 3, 2]);
   const flagCol = 282;
+  bird(263, 6);
+  bird(272, 2);
+  bird(279, 5);
   signs.push({ col: 262, id: "deploy-intro", label: "DEPLOY", sub: "FINAL", auto: true });
 
-  return { grid, blocks, signs, doors, coins, bugs, flagCol, playerCol: 3 };
+  return { grid, blocks, signs, doors, coins, bugs, birds, flagCol, playerCol: 3 };
 }
 
 export function isSolid(t: number) {

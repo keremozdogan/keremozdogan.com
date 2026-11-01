@@ -43,6 +43,7 @@ Change that file, rebuild, done.
 | --- | --- |
 | ← → / A D | Move |
 | Space / ↑ / W | Jump |
+| X / Shift / F | Throw code at bugs and pigeons |
 | Enter / E | Read sign · open door |
 | Esc / P | Pause |
 | M | Mute |

@@ -26,5 +26,6 @@ export function PixelSprite({
     g.clearRect(0, 0, c.width, c.height);
     g.drawImage(spr, 0, 0);
   }, [rows, palette, cacheKey]);
-  return <canvas ref={ref} className={className} style={{ width: size, height: size }} aria-hidden="true" />;
+  const ratio = rows.length / rows[0].length;
+  return <canvas ref={ref} className={className} style={{ width: size, height: Math.round(size * ratio) }} aria-hidden="true" />;
 }

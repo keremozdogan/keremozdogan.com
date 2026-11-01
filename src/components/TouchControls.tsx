@@ -50,6 +50,9 @@ export function TouchControls({ input, onAction }: { input: Input; onAction: () 
         >
           ▲
         </button>
+        <button className="big fire" {...bind("fire")} aria-label="Throw code">
+          B
+        </button>
         <button className="big" {...bind("jump")} aria-label="Jump">
           A
         </button>

@@ -90,7 +90,8 @@ export function PanelContent({ id }: { id: string }) {
         <h3>// HOW TO PLAY</h3>
         <ul>
           <li>Walk right. Read the signs — each one is a chapter of the CV.</li>
-          <li>Stomp the bugs. Collect commits. Hit the {"{ }"} blocks to unlock skills.</li>
+          <li>Stomp the bugs, or press X to throw code at them. Pigeons are flaky tests — they count too.</li>
+          <li>Collect commits. Hit the {"{ }"} blocks to unlock skills.</li>
           <li>Open the containers in World 4 to inspect projects.</li>
           <li>Reach the flag to deploy to production. No rollbacks.</li>
         </ul>

@@ -50,7 +50,7 @@ export function TitleScreen({
           ))}
         </div>
       )}
-      {isTouch && <div className="controls"><b>◀ ▶</b><span>Move</span><b>A</b><span>Jump</span><b>▲</b><span>Read / open</span></div>}
+      {isTouch && <div className="controls"><b>◀ ▶</b><span>Move</span><b>A</b><span>Jump</span><b>B</b><span>Throw code</span><b>▲</b><span>Read / open</span></div>}
       <div className="foot">
         © {new Date().getFullYear()} KEREM ÖZDOĞAN · ISTANBUL · ALL BUGS RESERVED
         <br />

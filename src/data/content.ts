@@ -209,6 +209,7 @@ export const LANGUAGES = [
 export const CONTROLS = [
   { keys: "← → / A D", action: "Move" },
   { keys: "SPACE / ↑ / W", action: "Jump" },
+  { keys: "X / SHIFT / F", action: "Throw code" },
   { keys: "ENTER / E", action: "Read sign · open door" },
   { keys: "ESC / P", action: "Pause" },
   { keys: "M", action: "Mute" },

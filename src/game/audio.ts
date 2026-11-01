@@ -180,6 +180,10 @@ export class ChipAudio {
       case "jump":
         this.tone("square", 260, t, 0.14, 0.12, out, 640);
         break;
+      case "throw":
+        this.tone("square", 900, t, 0.08, 0.09, out, 1600);
+        this.noise(t, 0.05, 0.05, 3000, out);
+        break;
       case "coin":
         this.tone("square", 988, t, 0.06, 0.1, out);
         this.tone("square", 1319, t + 0.06, 0.18, 0.1, out);

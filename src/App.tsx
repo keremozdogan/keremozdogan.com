@@ -206,8 +206,13 @@ export default function App() {
           break;
         case "Space":
         case "KeyZ":
-        case "KeyX":
           g.input.jump = true;
+          break;
+        case "KeyX":
+        case "KeyF":
+        case "ShiftLeft":
+        case "ShiftRight":
+          g.input.fire = true;
           break;
         case "Enter":
         case "KeyE":
@@ -234,8 +239,13 @@ export default function App() {
           break;
         case "Space":
         case "KeyZ":
-        case "KeyX":
           g.input.jump = false;
+          break;
+        case "KeyX":
+        case "KeyF":
+        case "ShiftLeft":
+        case "ShiftRight":
+          g.input.fire = false;
           break;
         case "Enter":
         case "KeyE":
