@@ -114,8 +114,8 @@ export function buildLevel(): LevelData {
   signs.push({ col: 59, id: exp[1].id, label: exp[1].company.toUpperCase(), sub: exp[1].level, auto: true });
   bugs.push({ col: 64 });
   bugs.push({ col: 67 });
-  bricks(69, 71, 7);
-  coinRow(69, 71, 5);
+  bricks(69, 71, 8);
+  coinRow(69, 71, 6);
   signs.push({ col: 75, id: exp[2].id, label: "RIGOSIS", sub: exp[2].level, auto: true });
   bugs.push({ col: 78 });
   bird(72, 4);
