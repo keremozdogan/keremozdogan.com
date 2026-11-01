@@ -34,7 +34,7 @@ export function TitleScreen({
           ▶ Press Start
         </button>
         <button className="btn" onClick={onResume}>
-          Recruiter mode
+          About me
         </button>
         <button className="btn ghost" onClick={onToggleMute}>
           Sound: {muted ? "OFF" : "ON"}

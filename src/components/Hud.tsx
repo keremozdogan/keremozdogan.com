@@ -51,8 +51,8 @@ export function Hud({
           <button className="icon-btn" onClick={onToggleMute} aria-label="Toggle sound">
             {muted ? "♪ OFF" : "♪ ON"}
           </button>
-          <button className="icon-btn" onClick={onResumeMode} aria-label="Recruiter mode">
-            CV
+          <button className="icon-btn" onClick={onResumeMode} aria-label="About me">
+            ABOUT
           </button>
           <button className="icon-btn" onClick={onPause} aria-label="Pause">
             II

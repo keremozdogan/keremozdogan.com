@@ -31,7 +31,7 @@ export function PauseOverlay({
           Restart
         </button>
         <button className="btn" onClick={onResumeMode}>
-          Recruiter mode
+          About me
         </button>
         <button className="btn ghost" onClick={onToggleMute}>
           Sound: {muted ? "OFF" : "ON"}
@@ -70,7 +70,7 @@ export function GameOverOverlay({ stats, onRestart, onResumeMode }: { stats: Sta
           Continue
         </button>
         <button className="btn" onClick={onResumeMode}>
-          Just show me the CV
+          Skip to About me
         </button>
       </div>
     </Dialog>
@@ -114,13 +114,13 @@ export function WinOverlay({ stats, onRestart, onResumeMode }: { stats: Stats; o
       {allSkills ? (
         <p className="xp">ACHIEVEMENT: FULL STACK — every skill block unlocked.</p>
       ) : (
-        <p className="xp">Missed some skill blocks? The real stack is listed in recruiter mode.</p>
+        <p className="xp">Missed some skill blocks? The real stack is listed under About me.</p>
       )}
       <h3>LET'S BUILD SOMETHING</h3>
       <ContactLinks />
       <div className="btnrow">
         <button className="btn primary" onClick={onResumeMode} autoFocus>
-          Recruiter mode (full CV)
+          About me (full CV)
         </button>
         <button className="btn" onClick={onRestart}>
           Play again

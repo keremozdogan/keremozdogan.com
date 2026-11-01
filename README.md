@@ -47,4 +47,4 @@ Change that file, rebuild, done.
 | Esc / P | Pause |
 | M | Mute |
 
-On phones the controls are on screen. Recruiter mode shows the CV as a plain scrollable page.
+On phones the controls are on screen. About me shows the CV as a plain scrollable page.

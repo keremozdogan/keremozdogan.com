@@ -10,7 +10,7 @@ export function ResumeMode({ onBack }: { onBack: () => void }) {
       <div className="wrap">
         <div className="top">
           <div className="px" style={{ color: "var(--teal)" }}>
-            RECRUITER MODE · NO JUMPING REQUIRED
+            ABOUT ME · NO JUMPING REQUIRED
           </div>
           <button className="btn small" onClick={onBack}>
             ◀ Back to game
