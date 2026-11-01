@@ -22,7 +22,7 @@ SITE=/etc/caddy/sites/keremozdogan.com.caddy
 if ! cmp -s deploy/Caddyfile "$SITE" 2>/dev/null; then
   if [ "$(id -u)" != 0 ]; then echo "deploy/Caddyfile değişmiş; caddy güncellemesi için root ile çalıştırın (site yine de güncellendi)"; exit 0; fi
   install -m 640 -o root -g caddy deploy/Caddyfile "$SITE"
-  caddy validate --config /etc/caddy/Caddyfile >/dev/null
+  caddy validate --config /etc/caddy/Caddyfile >/dev/null 2>&1 || { caddy validate --config /etc/caddy/Caddyfile; exit 1; }
   chown -R caddy:caddy /var/log/caddy   # validate root olarak log dosyasını root:root açabiliyor
   systemctl reload caddy
   echo "caddy site güncellendi"
