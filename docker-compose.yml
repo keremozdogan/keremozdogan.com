@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    image: keremozdogan-web
+    container_name: keremozdogan-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8780:80"

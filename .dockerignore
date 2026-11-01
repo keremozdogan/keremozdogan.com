@@ -1,0 +1,7 @@
+node_modules
+dist
+artifact
+.git
+scripts
+*.log
+.DS_Store

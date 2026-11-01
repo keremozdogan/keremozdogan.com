@@ -1,0 +1,15 @@
+# keremozdogan.com — paylaşılan Caddy site bloğu. deploy.sh bunu /etc/caddy/sites/keremozdogan.com.caddy
+# olarak kurar; ana Caddyfile `import sites/*.caddy` ile yükler. Otomatik HTTPS.
+keremozdogan.com {
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8780
+	log {
+		output file /var/log/caddy/keremozdogan.com.log
+	}
+}
+
+# www → çıplak domain
+www.keremozdogan.com {
+	redir https://keremozdogan.com{uri} permanent
+}
